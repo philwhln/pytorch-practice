@@ -48,13 +48,13 @@ def main():
         train_loss.backward()
         optimizer.step()
 
-        val_loss = calculate_loss(x_val, y_val, params, is_train=False)
         if epoch % 500 == 0:
+            val_loss = calculate_loss(x_val, y_val, params, is_train=False)
             print(f'epoch = {epoch}  params = {params}  params.grad = {params.grad}  ' +
                   f'train loss = {train_loss}  val loss = {val_loss}')
 
     with torch.no_grad():
-        line_x = torch.linspace(min(x), max(x_train), 100)
+        line_x = torch.linspace(min(x), max(x), 100)
         line_y = model(line_x, *params)
         plt.scatter(x_train, y_train)
         plt.scatter(x_val, y_val)

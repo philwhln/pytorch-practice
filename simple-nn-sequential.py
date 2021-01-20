@@ -28,11 +28,15 @@ def main():
     x_val = x[val_indices]
     y_val = y[val_indices]
 
-    model = nn.Linear(in_features=1, out_features=1, bias=True)
+    model = nn.Sequential(
+        nn.Linear(in_features=1, out_features=2, bias=True),
+        nn.Tanh(),
+        nn.Linear(in_features=2, out_features=1, bias=True),
+    )
     loss_fn = nn.MSELoss()
     optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
 
-    for epoch in range(5000):
+    for epoch in range(50000):
 
         train_loss = calculate_loss(model, loss_fn, x_train, y_train, is_train=True)
 
@@ -45,7 +49,7 @@ def main():
             print(f'epoch = {epoch}  train loss = {train_loss}  val loss = {val_loss}')
 
     with torch.no_grad():
-        line_x = torch.linspace(min(x.squeeze(1)), max(x_train.squeeze(1)), 100).unsqueeze(1)
+        line_x = torch.linspace(min(x.squeeze(1)), max(x.squeeze(1)), 100).unsqueeze(1)
         line_y = model(line_x)
         plt.scatter(x_train, y_train)
         plt.scatter(x_val, y_val)
