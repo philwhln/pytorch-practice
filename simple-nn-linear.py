@@ -3,12 +3,7 @@ from torch import Tensor, tensor, optim, nn
 import matplotlib.pyplot as plt
 
 
-def loss_fn(y_hat: Tensor, y: Tensor) -> Tensor:
-    squared_diffs = (y_hat - y) ** 2
-    return squared_diffs.mean()
-
-
-def calculate_loss(model, x, y, is_train):
+def calculate_loss(model, loss_fn, x, y, is_train):
     with torch.set_grad_enabled(is_train):
         y_hat = model(x)
         loss = loss_fn(y_hat, y)
@@ -34,17 +29,18 @@ def main():
     y_val = y[val_indices]
 
     model = nn.Linear(in_features=1, out_features=1, bias=True)
+    loss_fn = nn.MSELoss()
     optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
 
     for epoch in range(5000):
 
-        train_loss = calculate_loss(model, x_train, y_train, is_train=True)
+        train_loss = calculate_loss(model, loss_fn, x_train, y_train, is_train=True)
 
         optimizer.zero_grad()
         train_loss.backward()
         optimizer.step()
 
-        val_loss = calculate_loss(model, x_val, y_val, is_train=False)
+        val_loss = calculate_loss(model, loss_fn, x_val, y_val, is_train=False)
         if epoch % 500 == 0:
             print(f'epoch = {epoch}  train loss = {train_loss}  val loss = {val_loss}')
 
