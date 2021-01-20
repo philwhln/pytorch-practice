@@ -33,6 +33,10 @@ def main():
         nn.Tanh(),
         nn.Linear(in_features=2, out_features=1, bias=True),
     )
+
+    for name, param in model.named_parameters():
+        print(f'params for {name} = {param.shape}')
+
     loss_fn = nn.MSELoss()
     optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
 
