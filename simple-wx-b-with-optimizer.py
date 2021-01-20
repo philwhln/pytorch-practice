@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from pprint import PrettyPrinter
 
 
-def model(x: Tensor, w: Tensor, b: Tensor) -> Tensor:
-    return (w * x) + b
+def model(x: Tensor, w1: Tensor, w2: Tensor, b: Tensor) -> Tensor:
+    return (w1 * (x ** 2)) + (w2 * x) + b
 
 
 def loss_fn(y_hat: Tensor, y: Tensor) -> Tensor:
@@ -38,7 +38,7 @@ def main():
     x_val = x[val_indices]
     y_val = y[val_indices]
 
-    params = torch.tensor([1.0, 0.0], requires_grad=True)
+    params = torch.rand(3, requires_grad=True)
     optimizer = optim.Adam(params=[params], lr=learning_rate)
 
     for epoch in range(10000):
@@ -55,7 +55,7 @@ def main():
                   f'train loss = {train_loss}  val loss = {val_loss}')
 
     with torch.no_grad():
-        line_x = tensor([min(x), max(x_train)])
+        line_x = torch.linspace(min(x), max(x_train), 100)
         line_y = model(line_x, *params)
         plt.scatter(x_train, y_train)
         plt.scatter(x_val, y_val)
