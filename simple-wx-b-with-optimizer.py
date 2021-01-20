@@ -13,6 +13,14 @@ def loss_fn(y_hat: Tensor, y: Tensor) -> Tensor:
     return squared_diffs.mean()
 
 
+def calculate_loss(x, y, params, is_train):
+    with torch.set_grad_enabled(is_train):
+        y_hat = model(x, *params)
+        loss = loss_fn(y_hat, y)
+    assert loss.requires_grad == is_train
+    return loss
+
+
 def main():
 
     learning_rate = 1e-2
@@ -35,23 +43,18 @@ def main():
 
     for epoch in range(10000):
 
-        y_hat = model(x_train, *params)
-        loss = loss_fn(y_hat, y_train)
+        train_loss = calculate_loss(x_train, y_train, params, is_train=True)
 
         optimizer.zero_grad()
-        loss.backward()
+        train_loss.backward()
         optimizer.step()
 
-        with torch.no_grad():
-            if epoch % 500 == 0:
-                print(f'epoch = {epoch}  params = {params}  params.grad = {params.grad}  loss = {loss}')
+        val_loss = calculate_loss(x_val, y_val, params, is_train=False)
+        if epoch % 500 == 0:
+            print(f'epoch = {epoch}  params = {params}  params.grad = {params.grad}  ' +
+                  f'train loss = {train_loss}  val loss = {val_loss}')
 
     with torch.no_grad():
-
-        y_hat = model(x_val, *params)
-        val_loss = loss_fn(y_hat, y_val)
-        print(f'val_loss = {val_loss}')
-
         line_x = tensor([min(x), max(x_train)])
         line_y = model(line_x, *params)
         plt.scatter(x_train, y_train)
