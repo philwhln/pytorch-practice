@@ -8,6 +8,7 @@ authors = ["Phil Whelan <phil123@gmail.com>"]
 python = "^3.8"
 torch = "^1.7.1"
 matplotlib = "^3.3.3"
+torchvision = "^0.8.2"
 
 [tool.poetry.dev-dependencies]
 

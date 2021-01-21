@@ -1,5 +1,5 @@
 import torch
-from torch import Tensor, tensor, optim, nn
+from torch import tensor, optim, nn
 import matplotlib.pyplot as plt
 
 
