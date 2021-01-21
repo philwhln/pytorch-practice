@@ -72,13 +72,12 @@ def main():
         nn.Linear(in_features=n_hidden, out_features=n_hidden, bias=True),
         nn.Tanh(),
         nn.Linear(in_features=n_hidden, out_features=n_out, bias=True),
-        nn.LogSoftmax(dim=1)
     )
 
     for name, param in model.named_parameters():
         print(f'params for {name} = {param.shape}')
 
-    loss_fn = nn.NLLLoss()
+    loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
 
     for epoch in range(epochs):
