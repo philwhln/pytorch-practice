@@ -64,13 +64,13 @@ def main():
 
     model = nn.Sequential(
         nn.Linear(in_features=n_in, out_features=n_hidden, bias=True),
-        nn.Tanh(),
+        nn.ReLU(),
         nn.Linear(in_features=n_hidden, out_features=n_hidden, bias=True),
-        nn.Tanh(),
+        nn.ReLU(),
         nn.Linear(in_features=n_hidden, out_features=n_hidden, bias=True),
-        nn.Tanh(),
+        nn.ReLU(),
         nn.Linear(in_features=n_hidden, out_features=n_hidden, bias=True),
-        nn.Tanh(),
+        nn.ReLU(),
         nn.Linear(in_features=n_hidden, out_features=n_out, bias=True),
     )
 
