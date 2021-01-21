@@ -3,18 +3,13 @@ from pathlib import Path
 import torch
 from torch import optim, nn, tensor
 from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader
+
+from cache_fn_decoractor import cache
 
 
-def calculate_loss(model, loss_fn, x, y, is_train):
-    with torch.set_grad_enabled(is_train):
-        y_hat = model(x)
-        loss = loss_fn(y_hat, y)
-    assert loss.requires_grad == is_train
-    return loss
-
-
-def main():
+@cache('simple-vision-cifar10')
+def prepare_data(batch_size):
 
     data_path = Path(__file__).parent / 'data' / 'cifar-10'
 
@@ -43,22 +38,30 @@ def main():
     cifar10_train = [(img, label_remap[label]) for img, label in cifar10_train if label in label_remap.keys()]
     cifar10_val = [(img, label_remap[label]) for img, label in cifar10_val if label in label_remap.keys()]
 
+    train_loader = DataLoader(cifar10_train, batch_size=batch_size)
+    val_loader = DataLoader(cifar10_val, batch_size=batch_size)
+
+    return train_loader, val_loader, class_names
+
+
+def calculate_loss(model, loss_fn, x, y, is_train):
+    with torch.set_grad_enabled(is_train):
+        y_hat = model(x)
+        loss = loss_fn(y_hat, y)
+    assert loss.requires_grad == is_train
+    return loss
+
+
+def main():
+    learning_rate = 1e-4
+    batch_size = 64
+    epochs = 100
+
+    train_loader, val_loader, class_names = prepare_data(batch_size)
+
     n_in = 3 * 32 * 32
     n_hidden = 512
     n_out = len(class_names)
-
-    learning_rate = 1e-4
-
-    x_train, y_train = cifar10_train[0]
-    x_val, y_val = cifar10_val[0]
-
-    # reshape 3x32x32 into 1x3072
-    x_train = x_train.view(-1).unsqueeze(0)
-    x_val = x_val.view(-1).unsqueeze(0)
-
-    # reshape int into 1x1 tensor
-    y_train = tensor([y_train])
-    y_val = tensor([y_val])
 
     model = nn.Sequential(
         nn.Linear(in_features=n_in, out_features=n_hidden, bias=True),
@@ -73,17 +76,28 @@ def main():
     loss_fn = nn.NLLLoss()
     optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
 
-    for epoch in range(10000):
+    for epoch in range(epochs):
+        for imgs, label_indices in train_loader:
+            imgs_1d = imgs.view(imgs.shape[0], -1)
+            train_loss = calculate_loss(model, loss_fn, imgs_1d, label_indices, is_train=True)
+            optimizer.zero_grad()
+            train_loss.backward()
+            optimizer.step()
 
-        train_loss = calculate_loss(model, loss_fn, x_train, y_train, is_train=True)
+        if epoch % 5 == 0:
+            val_total = 0
+            val_correct = 0
+            for imgs, label_indices in val_loader:
+                num_imgs = imgs.shape[0]
+                imgs_1d = imgs.view(num_imgs, -1)
+                output = model(imgs_1d)
+                out_scores, out_indices = torch.max(output, dim=-1)
+                val_total += num_imgs
+                val_correct += int((out_indices == label_indices).sum())
+                val_loss = calculate_loss(model, loss_fn, imgs_1d, label_indices, is_train=False)
 
-        optimizer.zero_grad()
-        train_loss.backward()
-        optimizer.step()
-
-        if epoch % 500 == 0:
-            val_loss = calculate_loss(model, loss_fn, x_val, y_val, is_train=False)
-            print(f'epoch = {epoch}  train loss = {train_loss}  val loss = {val_loss}')
+            print(f'epoch = {epoch}  train loss = {train_loss}  val loss = {val_loss}  ' +
+                  f'val accuracy = {val_correct / val_total}')
 
 
 if __name__ == '__main__':

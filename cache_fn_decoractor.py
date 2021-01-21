@@ -14,9 +14,11 @@ def cache(cache_id):
         def wrapped(*args, **kwargs):
             if os.path.exists(path):
                 with open(path, 'rb') as f:
+                    print(f'Restoring cache : {path}')
                     return pickle.load(f)
             res = fn(*args, **kwargs)
             with open(path, 'wb') as f:
+                print(f'Saving cache : {path}')
                 pickle.dump(res, f)
             return res
 
