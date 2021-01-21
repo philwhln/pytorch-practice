@@ -10,7 +10,6 @@ from cache_fn_decoractor import cache
 
 @cache('simple-vision-cifar10')
 def prepare_data(batch_size):
-
     data_path = Path(__file__).parent / 'data' / 'cifar-10'
 
     cifar10_train = datasets.CIFAR10(data_path, train=True, download=True, transform=transforms.ToTensor())
@@ -66,6 +65,12 @@ def main():
     model = nn.Sequential(
         nn.Linear(in_features=n_in, out_features=n_hidden, bias=True),
         nn.Tanh(),
+        nn.Linear(in_features=n_hidden, out_features=n_hidden, bias=True),
+        nn.Tanh(),
+        nn.Linear(in_features=n_hidden, out_features=n_hidden, bias=True),
+        nn.Tanh(),
+        nn.Linear(in_features=n_hidden, out_features=n_hidden, bias=True),
+        nn.Tanh(),
         nn.Linear(in_features=n_hidden, out_features=n_out, bias=True),
         nn.LogSoftmax(dim=1)
     )
@@ -77,27 +82,44 @@ def main():
     optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
 
     for epoch in range(epochs):
+
+        # train one epoch
+        train_total = 0
+        train_correct = 0
         for imgs, label_indices in train_loader:
-            imgs_1d = imgs.view(imgs.shape[0], -1)
-            train_loss = calculate_loss(model, loss_fn, imgs_1d, label_indices, is_train=True)
+            num_imgs = imgs.shape[0]
+            imgs_1d = imgs.view(num_imgs, -1)
+
+            output = model(imgs_1d)
+            train_loss = loss_fn(output, label_indices)
+
+            out_scores, out_indices = torch.max(output, dim=-1)
+            train_total += num_imgs
+            train_correct += int((out_indices == label_indices).sum())
+
+            # update parameters
             optimizer.zero_grad()
             train_loss.backward()
             optimizer.step()
 
+        # occasionally check validation set performance
         if epoch % 5 == 0:
             val_total = 0
             val_correct = 0
             for imgs, label_indices in val_loader:
                 num_imgs = imgs.shape[0]
                 imgs_1d = imgs.view(num_imgs, -1)
-                output = model(imgs_1d)
+
+                with torch.set_grad_enabled(False):
+                    output = model(imgs_1d)
+                    val_loss = loss_fn(output, label_indices)
+
                 out_scores, out_indices = torch.max(output, dim=-1)
                 val_total += num_imgs
                 val_correct += int((out_indices == label_indices).sum())
-                val_loss = calculate_loss(model, loss_fn, imgs_1d, label_indices, is_train=False)
 
-            print(f'epoch = {epoch}  train loss = {train_loss}  val loss = {val_loss}  ' +
-                  f'val accuracy = {val_correct / val_total}')
+            print(f'epoch = {epoch}  train loss = {train_loss:0.6f}  train accuracy = {train_correct / train_total}  '
+                  f'val loss = {val_loss:0.6f}  val accuracy = {val_correct / val_total}')
 
 
 if __name__ == '__main__':
