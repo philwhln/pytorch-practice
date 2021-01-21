@@ -74,8 +74,15 @@ def main():
         nn.Linear(in_features=n_hidden, out_features=n_out, bias=True),
     )
 
-    for name, param in model.named_parameters():
-        print(f'params for {name} = {param.shape}')
+    total_trainable_params = 0
+    for name, params in model.named_parameters():
+        num_params = params.numel()
+        trainable_params = 0
+        if params.requires_grad:
+            total_trainable_params += num_params
+            trainable_params = num_params
+        print(f'{name}: {params.shape} params={num_params} trainable={trainable_params})')
+    print(f'total trainable params : {total_trainable_params}')
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
