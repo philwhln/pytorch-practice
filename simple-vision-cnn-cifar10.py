@@ -6,6 +6,9 @@ from dataloader_cifar10_animal_bird import prepare_data
 
 
 def main():
+    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    print(f'Training on device {device}')
+
     learning_rate = 1e-2
     batch_size = 64
     epochs = 100
@@ -18,6 +21,15 @@ def main():
 
     model = Net(*in_shape, n_hidden, n_out)
 
+    describe_params(model)
+
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(params=model.parameters(), lr=learning_rate)
+
+    train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs)
+
+
+def describe_params(model):
     total_trainable_params = 0
     for name, params in model.named_parameters():
         num_params = params.numel()
@@ -28,51 +40,80 @@ def main():
         print(f'{name}: {params.shape} params={num_params} trainable={trainable_params})')
     print(f'total trainable params : {total_trainable_params}')
 
-    loss_fn = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(params=model.parameters(), lr=learning_rate)
+
+def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs):
 
     for epoch in range(epochs):
 
-        # train one epoch
-        train_total = 0
-        train_correct = 0
-        train_loss_accum = 0.
-        for imgs, label_indices in train_loader:
-            num_imgs = imgs.shape[0]
+        train_accuracy, train_loss = one_epoch(model, loss_fn, device, train_loader, optimizer)
 
+        # occasionally check validation set performance
+        if epoch % 5 == 0:
+            val_accuracy, val_loss = one_epoch(model, loss_fn, device, val_loader)
+            print(f'epoch = {epoch}  train loss = {train_loss:0.6f}  train accuracy = {train_accuracy}  '
+                  f'val loss = {val_loss:0.6f}  val accuracy = {val_accuracy}')
+
+
+def one_epoch(model, loss_fn, device, data_loader, optimizer=None):
+
+    update_parameters = (optimizer is not None)
+
+    total = 0
+    correct = 0
+    loss_accum = 0.
+
+    for imgs, label_indices in data_loader:
+        imgs = imgs.to(device=device)
+        label_indices = label_indices.to(device=device)
+
+        num_imgs = imgs.shape[0]
+
+        with torch.set_grad_enabled(update_parameters):
             output = model(imgs)
             loss = loss_fn(output, label_indices)
-            train_loss_accum += loss.item()
 
-            out_scores, out_indices = torch.max(output, dim=-1)
-            train_total += num_imgs
-            train_correct += int((out_indices == label_indices).sum())
+        loss_accum += loss.item()
 
-            # update parameters
+        out_scores, out_indices = torch.max(output, dim=-1)
+        total += num_imgs
+        correct += int((out_indices == label_indices).sum())
+
+        if update_parameters:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-        # occasionally check validation set performance
-        if epoch % 5 == 0:
-            val_total = 0
-            val_correct = 0
-            val_loss_accum = 0.
-            for imgs, label_indices in val_loader:
-                num_imgs = imgs.shape[0]
+    avg_loss = loss_accum / len(data_loader)
+    accuracy = correct / total
 
-                with torch.set_grad_enabled(False):
-                    output = model(imgs)
-                    val_loss_accum += loss_fn(output, label_indices).item()
+    return accuracy, avg_loss
 
-                out_scores, out_indices = torch.max(output, dim=-1)
-                val_total += num_imgs
-                val_correct += int((out_indices == label_indices).sum())
 
-            train_loss = train_loss_accum / len(train_loader)
-            val_loss = val_loss_accum / len(val_loader)
-            print(f'epoch = {epoch}  train loss = {train_loss:0.6f}  train accuracy = {train_correct / train_total}  '
-                  f'val loss = {val_loss:0.6f}  val accuracy = {val_correct / val_total}')
+def validation(model, loss_fn, data_loader, device):
+    total = 0
+    correct = 0
+    loss_accum = 0.
+
+    for imgs, label_indices in data_loader:
+        imgs = imgs.to(device=device)
+        label_indices = label_indices.to(device=device)
+
+        num_imgs = imgs.shape[0]
+
+        with torch.set_grad_enabled(False):
+            output = model(imgs)
+            loss = loss_fn(output, label_indices).item()
+
+        loss_accum += loss.item()
+
+        out_scores, out_indices = torch.max(output, dim=-1)
+        total += num_imgs
+        correct += int((out_indices == label_indices).sum())
+
+    avg_loss = loss_accum / len(data_loader)
+    accuracy = correct / total
+
+    return accuracy, avg_loss
 
 
 class Net(nn.Module):
