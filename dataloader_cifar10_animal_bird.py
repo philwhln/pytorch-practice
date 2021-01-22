@@ -8,7 +8,7 @@ from cache_fn_decoractor import cache
 
 
 @cache('simple-vision-cifar10')
-def prepare_data(batch_size):
+def prepare_data(batch_size: int) -> DataLoader:
     data_path = Path(__file__).parent / 'data' / 'cifar-10'
 
     cifar10_train = datasets.CIFAR10(data_path, train=True, download=True, transform=transforms.ToTensor())
@@ -26,8 +26,8 @@ def prepare_data(batch_size):
         transforms.Normalize(imgs_train_mean, imgs_train_std),
     ])
 
-    cifar10_train = datasets.CIFAR10(data_path, train=True, download=False, transform=cifar10_transforms)
-    cifar10_val = datasets.CIFAR10(data_path, train=False, download=False, transform=cifar10_transforms)
+    cifar10_train = datasets.CIFAR10(data_path, train=True, download=False, shuffle=True, transform=cifar10_transforms)
+    cifar10_val = datasets.CIFAR10(data_path, train=False, download=True, shuffle=True, transform=cifar10_transforms)
 
     class_names = ['airplane', 'bird']
 
