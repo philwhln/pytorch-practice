@@ -27,7 +27,7 @@ def prepare_data(batch_size: int) -> DataLoader:
     ])
 
     cifar10_train = datasets.CIFAR10(data_path, train=True, download=False, transform=cifar10_transforms)
-    cifar10_val = datasets.CIFAR10(data_path, train=False, download=True, shuffle=True, transform=cifar10_transforms)
+    cifar10_val = datasets.CIFAR10(data_path, train=False, download=True, transform=cifar10_transforms)
 
     class_names = ['airplane', 'bird']
 
