@@ -8,12 +8,14 @@ from cache_fn_decoractor import cache
 
 
 @cache('simple-vision-cifar10')
-def prepare_data(batch_size: int) -> DataLoader:
+def prepare_data(batch_size: int, device=None) -> DataLoader:
     data_path = Path(__file__).parent / 'data' / 'cifar-10'
 
     cifar10_train = datasets.CIFAR10(data_path, train=True, download=True, transform=transforms.ToTensor())
 
     imgs_train = torch.stack([img_t for img_t, _ in cifar10_train], dim=3)
+    if device:
+        imgs_train = imgs_train.to(device)
 
     # convert shape (3, 32, 32, 50000) to (3, 32 * 32 * 50000), then per channel mean (across the second dimension)
     imgs_train_mean = imgs_train.view(3, -1).mean(dim=1)

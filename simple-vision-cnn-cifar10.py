@@ -15,7 +15,7 @@ def main():
     batch_size = 64
     epochs = 100
 
-    train_loader, val_loader, class_names = prepare_data(batch_size)
+    train_loader, val_loader, class_names = prepare_data(batch_size, device=device)
 
     in_shape = (32, 32, 3)
     n_hidden = 512
