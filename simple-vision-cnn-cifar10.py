@@ -21,7 +21,7 @@ def main():
     n_hidden = 512
     n_out = len(class_names)
 
-    model = Net(*in_shape, n_hidden, n_out)
+    model = Net(*in_shape, n_hidden, n_out).to(device)
 
     describe_params(model)
 
