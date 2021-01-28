@@ -26,7 +26,7 @@ def prepare_data(batch_size: int) -> DataLoader:
         transforms.Normalize(imgs_train_mean, imgs_train_std),
     ])
 
-    cifar10_train = datasets.CIFAR10(data_path, train=True, download=False, shuffle=True, transform=cifar10_transforms)
+    cifar10_train = datasets.CIFAR10(data_path, train=True, download=False, transform=cifar10_transforms)
     cifar10_val = datasets.CIFAR10(data_path, train=False, download=True, shuffle=True, transform=cifar10_transforms)
 
     class_names = ['airplane', 'bird']
@@ -36,7 +36,7 @@ def prepare_data(batch_size: int) -> DataLoader:
     cifar10_train = [(img, label_remap[label]) for img, label in cifar10_train if label in label_remap.keys()]
     cifar10_val = [(img, label_remap[label]) for img, label in cifar10_val if label in label_remap.keys()]
 
-    train_loader = DataLoader(cifar10_train, batch_size=batch_size)
-    val_loader = DataLoader(cifar10_val, batch_size=batch_size)
+    train_loader = DataLoader(cifar10_train, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(cifar10_val, batch_size=batch_size, shuffle=True)
 
     return train_loader, val_loader, class_names

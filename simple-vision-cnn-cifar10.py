@@ -1,3 +1,5 @@
+from time import time
+
 import torch
 import torch.nn.functional as F
 from torch import optim, nn
@@ -45,13 +47,18 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs):
 
     for epoch in range(epochs):
 
+        start_time = time()
         train_accuracy, train_loss = one_epoch(model, loss_fn, device, train_loader, optimizer)
+        train_time = time() - start_time
 
         # occasionally check validation set performance
         if epoch % 5 == 0:
+            start_time = time()
             val_accuracy, val_loss = one_epoch(model, loss_fn, device, val_loader)
+            val_time = time() - start_time
             print(f'epoch = {epoch}  train loss = {train_loss:0.6f}  train accuracy = {train_accuracy}  '
-                  f'val loss = {val_loss:0.6f}  val accuracy = {val_accuracy}')
+                  f'val loss = {val_loss:0.6f}  val accuracy = {val_accuracy}  '
+                  f'train time = {train_time:0.2f}  val time = {val_time:0.2f}')
 
 
 def one_epoch(model, loss_fn, device, data_loader, optimizer=None):
