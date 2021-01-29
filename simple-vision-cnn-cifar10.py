@@ -1,3 +1,4 @@
+from pathlib import Path
 from time import time
 
 import torch
@@ -13,7 +14,7 @@ def main():
 
     learning_rate = 1e-2
     batch_size = 64
-    epochs = 100
+    epochs = 2
 
     train_loader, val_loader, class_names = prepare_data(batch_size, device=device)
 
@@ -29,6 +30,10 @@ def main():
     optimizer = optim.SGD(params=model.parameters(), lr=learning_rate)
 
     train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs)
+
+    output_path = Path(__file__).with_suffix('.pt')
+
+    torch.save(model.state_dict(), output_path)
 
 
 def describe_params(model):
