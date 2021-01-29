@@ -135,7 +135,7 @@ class Net(nn.Module):
         conv2_out_channels = 8
         self.conv1 = nn.Conv2d(input_channels, conv1_out_channels, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(conv1_out_channels, conv2_out_channels, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(int(input_width / 2 / 2) * int(input_height / 2 / 2) * conv2_out_channels, hidden_units)
+        self.fc1 = nn.Linear((input_width // 2 // 2) * (input_height // 2 // 2) * conv2_out_channels, hidden_units)
         self.fc2 = nn.Linear(hidden_units, output_units)
 
     def forward(self, x):
