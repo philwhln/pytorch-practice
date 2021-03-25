@@ -10,6 +10,7 @@ torch = "^1.7.1"
 matplotlib = "^3.3.3"
 torchvision = "^0.8.2"
 seaborn = "^0.11.1"
+tensorboard = "^2.4.1"
 
 [tool.poetry.dev-dependencies]
 
