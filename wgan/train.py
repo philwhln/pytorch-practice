@@ -12,10 +12,11 @@ from utils import gradient_penalty
 
 data_dir = Path(__file__).parent.parent / 'data'
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 lr = 1e-4
-batch_size = 64
+batch_size = 512 if torch.cuda.is_available() else 32
+data_loader_workers = 12 if torch.cuda.is_available() else 0
 image_size = 64
+dataset_name = "celeb"
 channels_img = 3
 z_dim = 100
 num_epochs = 5
@@ -23,6 +24,9 @@ features_disc = 64
 features_gen = 64
 critic_iterations = 5
 lambda_gradient_penalty = 10
+batches_per_stats = 20 if torch.cuda.is_available() else 2
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 transform = transforms.Compose([
     transforms.Resize(image_size),
@@ -34,8 +38,8 @@ transform = transforms.Compose([
     ),
 ])
 
-real_dataset = datasets.ImageFolder(root=(data_dir / "celeb"), transform=transform)
-real_data_loader = data.DataLoader(real_dataset, batch_size=batch_size, shuffle=True)
+real_dataset = datasets.ImageFolder(root=(data_dir / dataset_name), transform=transform)
+real_data_loader = data.DataLoader(real_dataset, batch_size=batch_size, shuffle=True, num_workers=data_loader_workers)
 
 gen = Generator(z_dim, channels_img, features_gen).to(device)
 critic = Critic(channels_img, features_disc).to(device)
