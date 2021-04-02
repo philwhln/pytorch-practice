@@ -31,7 +31,7 @@ def main():
 
     train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs)
 
-    output_path = Path(__file__).with_suffix('.pt')
+    output_path = Path(__file__).parent / "parameters" / Path(__file__).with_suffix('.pt').name
 
     torch.save(model.state_dict(), output_path)
 
