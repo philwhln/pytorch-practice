@@ -1,7 +1,11 @@
 # Pix2Pix
 
-## Paper
+This was mostly implemented following the paper and associated code. Reviewed Aladdin Persson's YouTube video, so see
+where he diverged from my implementation, taking some things like checkpointing from their.
 
+Also, took a brief look at the Tensorflow implementation.
+
+## Paper
 
 https://arxiv.org/pdf/1611.07004.pdf
 
