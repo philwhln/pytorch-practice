@@ -19,7 +19,7 @@ DEBUG_SHOW_IMAGES = DEBUG and RUNNING_IN_INTELLIJ
 
 DATASET_NAME = "facades"
 BATCH_SIZE = 8
-EPOCHS = 10
+EPOCHS = 500
 NUM_WORKERS = 0
 LOSS_L1_LAMBDA = 100
 LEARNING_RATE = 2e-4
@@ -102,7 +102,7 @@ for epoch in range(1, EPOCHS + 1):
         print(f"[{time() - start_t:0.1f}] epoch={epoch} batch={(batch_idx + 1):02d}/{num_batches} "
               f"loss_dis={loss_discriminator:0.3f} loss_gen={loss_generator:0.3f}")
 
-        if batch_idx % 3 == 0:
+        if batch_idx == 0 and epoch % 5 == 0:
             step += 1
             imgs = torch.cat([x[0], y[0], y_fake[0]], dim=-1)
             tb_writer.add_image('real', make_grid(imgs, normalize=True), global_step=step)
