@@ -29,11 +29,14 @@ class ImageDataset(Dataset):
         img_np = np.array(img)
         input_t = self.transform_input(image=img_np[:, self.src_width:, :])["image"]
         target_t = self.transform_target(image=img_np[:, :self.src_width, :])["image"]
-        return input_t, target_t
+        return idx, input_t, target_t
+
+    def src_filename(self, idx):
+        return self.img_paths[idx]
 
 
-def load_dataset(dataset_name, src_width=256):
-    dataset_dir = Path(__file__).parent.parent / "data" / "kaggle-pix2pix" / dataset_name / dataset_name
+def load_dataset(dataset_name, dataset_type, src_width=256):
+    dataset_dir = Path(__file__).parent.parent / "data" / "kaggle-pix2pix" / dataset_name / dataset_name / dataset_type
 
     transform_input = A.Compose([
         # A.ColorJitter(0.1),
@@ -46,9 +49,5 @@ def load_dataset(dataset_name, src_width=256):
         ToTensorV2(),
     ])
 
-    return (
-        ImageDataset(root=(dataset_dir / "train"), src_width=src_width, transform_input=transform_input,
-                     transform_target=transform_target),
-        ImageDataset(root=(dataset_dir / "val"), src_width=src_width, transform_input=transform_input,
-                     transform_target=transform_target),
-    )
+    return ImageDataset(root=dataset_dir, src_width=src_width, transform_input=transform_input,
+                        transform_target=transform_target)

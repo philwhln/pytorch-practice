@@ -34,10 +34,9 @@ if torch.cuda.is_available():
     # enable cuDNN auto-tuner
     torch.backends.cudnn.benchmark = True
 
-train_dataset, val_dataset = load_dataset(DATASET_NAME)
+train_dataset = load_dataset(DATASET_NAME, "train")
 
 train_dataloader = data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
-test_dataloader = data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 
 if DEBUG_SHOW_IMAGES:
     import matplotlib.pyplot as plt
@@ -77,7 +76,7 @@ checkpoint.load(CHECKPOINT_NAME_DISCRIMINATOR, discriminator, optimizer_discrimi
 
 for epoch in range(1, EPOCHS + 1):
     num_batches = len(train_dataloader)
-    for batch_idx, (x, y) in enumerate(train_dataloader):
+    for batch_idx, (_, x, y) in enumerate(train_dataloader):
         x = x.to(device)
         y = y.to(device)
         predictions_real = discriminator(x, y)
