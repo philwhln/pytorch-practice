@@ -36,7 +36,7 @@ class Generator(nn.Module):
     def __init__(self, img_channels=3, features=64):
         super(Generator, self).__init__()
 
-        self.encoder_blocks = [EncoderBlock(**spec) for spec in [
+        self.encoder_blocks = nn.ModuleList([EncoderBlock(**spec) for spec in [
             {"in_channels": img_channels, "out_channels": features * 1, "use_batch_norm": False},
             {"in_channels": features * 1, "out_channels": features * 2},
             {"in_channels": features * 2, "out_channels": features * 4},
@@ -45,9 +45,9 @@ class Generator(nn.Module):
             {"in_channels": features * 8, "out_channels": features * 8},
             {"in_channels": features * 8, "out_channels": features * 8},
             {"in_channels": features * 8, "out_channels": features * 8, "use_leaky_relu": False},
-        ]]
+        ]])
 
-        self.decoder_blocks = [DecoderBlock(**spec) for spec in [
+        self.decoder_blocks = nn.ModuleList([DecoderBlock(**spec) for spec in [
             {"in_channels": features * 8 * 1, "out_channels": features * 8, "use_dropout": True},
             {"in_channels": features * 8 * 2, "out_channels": features * 8, "use_dropout": True},
             {"in_channels": features * 8 * 2, "out_channels": features * 8, "use_dropout": True},
@@ -55,7 +55,7 @@ class Generator(nn.Module):
             {"in_channels": features * 8 * 2, "out_channels": features * 4},
             {"in_channels": features * 4 * 2, "out_channels": features * 2},
             {"in_channels": features * 2 * 2, "out_channels": features * 1},
-        ]]
+        ]])
 
         self.final_conv = nn.ConvTranspose2d(features * 1 * 2, img_channels, kernel_size=4, stride=2, padding=1)
         self.tanh = nn.Tanh()
